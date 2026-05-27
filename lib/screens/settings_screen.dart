@@ -89,12 +89,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 12),
           FilledButton(
             onPressed: () async {
-              final authController = context.read<AuthController>();
               await c.setDisplayName(_nameCtrl.text);
               await c.setGroupId(_groupCtrl.text);
-              if (_nameCtrl.text.trim().isNotEmpty) {
-                await authController.updateDisplayName(_nameCtrl.text.trim());
-              }
               if (!context.mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('已保存')),

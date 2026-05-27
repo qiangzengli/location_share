@@ -58,4 +58,19 @@ class LocalPrefs {
     final p = await SharedPreferences.getInstance();
     await p.setBool(_kSharingEnabled, v);
   }
+
+  Future<String?> getString(String key) async {
+    final p = await SharedPreferences.getInstance();
+    return p.getString(key);
+  }
+
+  Future<void> setString(String key, String value) async {
+    final p = await SharedPreferences.getInstance();
+    await p.setString(key, value);
+  }
+
+  Future<void> remove(String key) async {
+    final p = await SharedPreferences.getInstance();
+    await p.remove(key);
+  }
 }

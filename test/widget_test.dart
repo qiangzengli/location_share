@@ -29,9 +29,7 @@ void main() {
             )..initialize(),
           ),
         ],
-        child: const LocationShareApp(
-          firebaseConfigured: false,
-        ),
+        child: const LocationShareApp(),
       ),
     );
     await tester.pump();

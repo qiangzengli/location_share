@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:x_amap_flutter_base/amap_flutter_base.dart';
 
 /// One row in `participant_locations` (and local "me" snapshot).
@@ -44,21 +43,6 @@ class ParticipantLocation {
     };
   }
 
-  Map<String, dynamic> toFirestoreMap() {
-    return {
-      'groupId': groupId,
-      'participantId': participantId,
-      'displayName': displayName,
-      'latitude': latitude,
-      'longitude': longitude,
-      'accuracy': accuracy,
-      'heading': heading,
-      'speed': speed,
-      'updatedAt': updatedAt.toUtc(),
-      'platform': platform,
-    };
-  }
-
   factory ParticipantLocation.fromMap(Map<String, dynamic> m) {
     return ParticipantLocation(
       groupId: m['group_id'] as String? ?? '',
@@ -90,21 +74,6 @@ class ParticipantLocation {
     );
   }
 
-  factory ParticipantLocation.fromFirestoreMap(Map<String, dynamic> m) {
-    return ParticipantLocation(
-      groupId: m['groupId'] as String? ?? '',
-      participantId: m['participantId'] as String? ?? '',
-      displayName: m['displayName'] as String? ?? '',
-      latitude: _asDouble(m['latitude']) ?? 0,
-      longitude: _asDouble(m['longitude']) ?? 0,
-      accuracy: _asDouble(m['accuracy']),
-      heading: _asDouble(m['heading']),
-      speed: _asDouble(m['speed']),
-      updatedAt: _parseTime(m['updatedAt']),
-      platform: m['platform'] as String? ?? '',
-    );
-  }
-
   static double? _asDouble(Object? v) {
     if (v == null) return null;
     if (v is double) return v;
@@ -116,7 +85,6 @@ class ParticipantLocation {
   static DateTime _parseTime(Object? v) {
     if (v == null) return DateTime.fromMillisecondsSinceEpoch(0);
     if (v is DateTime) return v;
-    if (v is Timestamp) return v.toDate().toUtc();
     if (v is String) {
       return DateTime.tryParse(v)?.toUtc() ??
           DateTime.fromMillisecondsSinceEpoch(0);

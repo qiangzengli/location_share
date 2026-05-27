@@ -1,16 +1,15 @@
 import 'dart:async';
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:location_share/models/auth_user.dart';
-import 'package:location_share/services/auth_service.dart';
+import 'package:location_share/services/http_auth_service.dart';
 
 class AuthController extends ChangeNotifier {
   AuthController({
-    AuthService? authService,
+    HttpAuthService? authService,
   }) : _authService = authService;
 
-  final AuthService? _authService;
+  final HttpAuthService? _authService;
 
   StreamSubscription<AuthUser?>? _authSub;
 
@@ -30,10 +29,10 @@ class AuthController extends ChangeNotifier {
       return;
     }
 
+    await authService.initialize();
     user = authService.currentUser;
     _authSub = authService.authStateChanges().listen((nextUser) {
       user = nextUser;
-      initialized = true;
       notifyListeners();
     });
     initialized = true;
@@ -63,12 +62,6 @@ class AuthController extends ChangeNotifier {
     });
   }
 
-  Future<bool> updateDisplayName(String displayName) async {
-    return _runAuthAction(() {
-      return _authService!.updateDisplayName(displayName);
-    });
-  }
-
   Future<void> signOut() async {
     errorMessage = null;
     notifyListeners();
@@ -88,8 +81,8 @@ class AuthController extends ChangeNotifier {
     } on TimeoutException {
       errorMessage = '请求超时，请检查网络或稍后重试。';
       return false;
-    } on FirebaseAuthException catch (error) {
-      errorMessage = _mapFirebaseError(error);
+    } on HttpAuthException catch (error) {
+      errorMessage = error.message;
       return false;
     } catch (error) {
       errorMessage = '操作失败，请稍后重试。';
@@ -101,27 +94,6 @@ class AuthController extends ChangeNotifier {
       isBusy = false;
       notifyListeners();
     }
-  }
-
-  String _mapFirebaseError(FirebaseAuthException error) {
-    final message = error.message ?? '';
-    if (error.code == 'internal-error' &&
-        message.contains('CONFIGURATION_NOT_FOUND')) {
-      return 'Firebase Auth 配置不完整：请在 Firebase Android 应用里补充 SHA-1/SHA-256 指纹，并确认已启用邮箱密码登录。';
-    }
-    return switch (error.code) {
-      'invalid-email' => '邮箱格式不正确。',
-      'user-disabled' => '该账号已被禁用。',
-      'user-not-found' => '账号不存在。',
-      'wrong-password' => '密码错误。',
-      'email-already-in-use' => '该邮箱已被注册。',
-      'weak-password' => '密码强度太弱，请至少使用 6 位字符。',
-      'invalid-credential' => '邮箱或密码不正确。',
-      'too-many-requests' => '尝试次数过多，请稍后再试。',
-      'network-request-failed' => '网络请求失败，请检查网络连接。',
-      'internal-error' => 'Firebase 内部配置异常，请检查项目配置后重试。',
-      _ => error.message ?? '认证失败，请稍后重试。',
-    };
   }
 
   @override

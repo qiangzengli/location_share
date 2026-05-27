@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:location_share/providers/auth_controller.dart';
 import 'package:location_share/providers/sharing_controller.dart';
-import 'package:location_share/repositories/firestore_location_sync_repository.dart';
-import 'package:location_share/repositories/location_sync_repository.dart';
-import 'package:location_share/services/auth_service.dart';
-import 'package:location_share/services/firebase_bootstrap.dart';
+import 'package:location_share/repositories/http_location_sync_repository.dart';
+import 'package:location_share/services/http_auth_service.dart';
 import 'package:location_share/services/local_prefs.dart';
 import 'package:location_share/widgets/app_shell.dart';
 import 'package:provider/provider.dart';
@@ -13,11 +10,15 @@ import 'package:provider/provider.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final firebaseState = await initializeFirebaseIfConfigured();
   final prefs = LocalPrefs();
-  final LocationSyncRepository? sync = firebaseState.isConfigured
-      ? FirestoreLocationSyncRepository()
-      : null;
+  final authService = HttpAuthService(
+    baseUrl: 'http://localhost:8080',
+    prefs: prefs,
+  );
+  final locationSync = HttpLocationSyncRepository(
+    baseUrl: 'http://localhost:8080',
+    getAccessToken: authService.getAccessToken,
+  );
 
   runApp(
     MultiProvider(
@@ -25,34 +26,22 @@ Future<void> main() async {
         ChangeNotifierProvider(
           create: (_) => SharingController(
             prefs: prefs,
-            syncRepository: sync,
+            syncRepository: locationSync,
           )..initialize(),
         ),
         ChangeNotifierProvider(
           create: (_) => AuthController(
-            authService: firebaseState.isConfigured
-                ? AuthService(firebaseAuth: FirebaseAuth.instance)
-                : null,
+            authService: authService,
           )..initialize(),
         ),
       ],
-      child: LocationShareApp(
-        firebaseConfigured: firebaseState.isConfigured,
-        firebaseErrorMessage: firebaseState.errorMessage,
-      ),
+      child: const LocationShareApp(),
     ),
   );
 }
 
 class LocationShareApp extends StatelessWidget {
-  const LocationShareApp({
-    super.key,
-    required this.firebaseConfigured,
-    this.firebaseErrorMessage,
-  });
-
-  final bool firebaseConfigured;
-  final String? firebaseErrorMessage;
+  const LocationShareApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -66,10 +55,7 @@ class LocationShareApp extends StatelessWidget {
         useMaterial3: true,
         appBarTheme: const AppBarTheme(centerTitle: true),
       ),
-      home: AppShell(
-        firebaseConfigured: firebaseConfigured,
-        firebaseErrorMessage: firebaseErrorMessage,
-      ),
+      home: const AppShell(),
     );
   }
 }
