@@ -76,6 +76,29 @@ class SharingController extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> applyAuthenticatedUser({
+    required String uid,
+    required String displayName,
+  }) async {
+    final normalizedName = displayName.trim().isEmpty ? '我' : displayName.trim();
+    var changed = false;
+
+    if (participantId != uid) {
+      participantId = uid;
+      await _prefs.setParticipantId(uid);
+      changed = true;
+    }
+    if (this.displayName != normalizedName) {
+      this.displayName = normalizedName;
+      await _prefs.setDisplayName(normalizedName);
+      changed = true;
+    }
+
+    if (changed) {
+      notifyListeners();
+    }
+  }
+
   Future<void> setAmapPrivacyAccepted(bool v) async {
     amapPrivacyAccepted = v;
     await _prefs.setAmapPrivacyAccepted(v);
@@ -127,7 +150,7 @@ class SharingController extends ChangeNotifier {
     if (on == sharingEnabled) return;
     if (on) {
       if (_sync == null) {
-        statusMessage = '请配置 Spring Boot 地址：flutter run --dart-define=API_BASE_URL=http://<主机>:8080';
+        statusMessage = '请先完成 Firebase 配置并登录，才能启用位置共享。';
         notifyListeners();
         return;
       }
@@ -205,7 +228,9 @@ class SharingController extends ChangeNotifier {
   void _onLocationMap(Map<String, Object> raw) {
     final err = raw['errorCode'];
     if (err != null && err.toString() != '0') {
-      statusMessage = raw['errorInfo']?.toString() ?? '定位失败';
+      final info = raw['errorInfo']?.toString();
+      statusMessage =
+          '定位失败($err)${info == null || info.isEmpty ? '' : ': $info'}';
       notifyListeners();
       return;
     }
@@ -249,7 +274,7 @@ class SharingController extends ChangeNotifier {
       if (kDebugMode) {
         debugPrint('upsert failed: $e\n$st');
       }
-      statusMessage = '同步失败，请检查网络、API_BASE_URL 与登录 token。';
+      statusMessage = '位置同步失败，请检查 Firebase 配置、登录状态与网络。';
       notifyListeners();
     }
   }

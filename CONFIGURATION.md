@@ -1,4 +1,4 @@
-# 配置说明（高德 + Spring Boot）
+# 配置说明（高德 + Firebase）
 
 ## 1. 高德开放平台
 
@@ -10,20 +10,39 @@
 ### 运行应用（dart-define）
 
 ```bash
-flutter run \
-  --dart-define=API_BASE_URL=http://<你的电脑IP>:8080 \
-  --dart-define=API_ACCESS_TOKEN=<登录后 accessToken>
+flutter run
 ```
 
-Android 模拟器访问本机后端可使用 `http://10.0.2.2:8080`。也可用 `--dart-define-from-file=tool/dart_defines.json`（勿把真实 token 提交到 Git）。
+Firebase 原生配置文件已接入工程，不再依赖 `dart-define` 注入 Firebase 参数。
 
-## 2. Spring Boot 后端
+## 2. Firebase 项目配置
 
-1. 在 `backend/` 目录执行 `mvn spring-boot:run`，默认监听 `8080`。
-2. 先调用 `POST /api/auth/register` 或 `POST /api/auth/login` 获取 JWT（详见 [`backend/README.md`](backend/README.md)）。
-3. 客户端将 `accessToken` 通过 `API_ACCESS_TOKEN` 注入，或在应用内登录后写入 `LocalPrefs.setBackendAccessToken`（待接入登录页）。
+1. 在 Firebase Console 创建项目。
+2. 启用 **Authentication > Sign-in method > Email/Password**。
+3. 启用 **Cloud Firestore**。
+4. 从 Firebase Console 下载并放置原生配置文件：
 
-位置同步走 HTTP：`PUT /api/groups/{groupId}/locations/me` 上传、`GET /api/groups/{groupId}/locations` 拉取（客户端约每 2 秒轮询）。
+- `android/app/google-services.json`
+- `ios/Runner/GoogleService-Info.plist`
+5. 如需进一步标准化，可后续执行 `flutterfire configure` 生成官方 `lib/firebase_options.dart`，再覆盖当前文件。
+
+应用使用：
+
+- Firebase Auth：邮箱注册 / 登录 / 登出
+- Cloud Firestore：集合 `participant_locations` 实时同步位置
+
+推荐先使用下面的开发规则：
+
+```text
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /participant_locations/{docId} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
+```
 
 ## 3. 定位与权限（首版）
 
@@ -33,4 +52,4 @@ Android 模拟器访问本机后端可使用 `http://10.0.2.2:8080`。也可用 
 ## 4. 共享组与设备标识
 
 - 默认共享组 ID：`groups/dev_family`（可在「设置」中修改；所有测试机需一致）。
-- 每台设备首次启动生成 **UUID** 作为 `participant_id`，保存在 `SharedPreferences`。
+- 登录后使用 Firebase `uid` 作为 `participant_id`。

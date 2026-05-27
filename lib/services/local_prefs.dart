@@ -6,7 +6,6 @@ class LocalPrefs {
   static const _kGroupId = 'group_id';
   static const _kAmapPrivacyOk = 'amap_privacy_ok';
   static const _kSharingEnabled = 'sharing_enabled';
-  static const _kBackendAccessToken = 'backend_access_token';
 
   static const defaultGroupId = 'groups/dev_family';
 
@@ -58,20 +57,5 @@ class LocalPrefs {
   Future<void> setSharingEnabled(bool v) async {
     final p = await SharedPreferences.getInstance();
     await p.setBool(_kSharingEnabled, v);
-  }
-
-  /// Spring Boot JWT access token（登录后写入，供 HTTP 位置同步使用）。
-  Future<String?> getBackendAccessToken() async {
-    final p = await SharedPreferences.getInstance();
-    return p.getString(_kBackendAccessToken);
-  }
-
-  Future<void> setBackendAccessToken(String? token) async {
-    final p = await SharedPreferences.getInstance();
-    if (token == null || token.isEmpty) {
-      await p.remove(_kBackendAccessToken);
-    } else {
-      await p.setString(_kBackendAccessToken, token);
-    }
   }
 }

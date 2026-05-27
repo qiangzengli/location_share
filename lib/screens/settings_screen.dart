@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:location_share/config/env.dart';
+import 'package:location_share/providers/auth_controller.dart';
 import 'package:location_share/providers/sharing_controller.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
@@ -33,18 +33,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final c = context.watch<SharingController>();
+    final auth = context.watch<AuthController>();
 
     return Scaffold(
       appBar: AppBar(title: const Text('设置')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(auth.user?.displayName ?? c.displayName),
+            subtitle: Text(auth.user?.email ?? '未登录'),
+            trailing: TextButton(
+              onPressed: auth.isBusy
+                  ? null
+                  : () async {
+                      await context.read<AuthController>().signOut();
+                      if (context.mounted) {
+                        Navigator.of(context).pop();
+                      }
+                    },
+              child: const Text('退出登录'),
+            ),
+          ),
+          const Divider(),
           SwitchListTile(
             title: const Text('共享我的位置'),
             subtitle: Text(
               c.hasSyncBackend
-                  ? '将本机位置上传到 Spring Boot 后端同组'
-                  : '未配置 API_BASE_URL，仅本地定位预览',
+                  ? '将本机位置实时同步到 Firebase Firestore'
+                  : 'Firebase 未就绪，仅本地定位预览',
             ),
             value: c.sharingEnabled,
             onChanged: (v) => c.setSharingEnabled(v),
@@ -71,13 +89,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 12),
           FilledButton(
             onPressed: () async {
+              final authController = context.read<AuthController>();
               await c.setDisplayName(_nameCtrl.text);
               await c.setGroupId(_groupCtrl.text);
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('已保存')),
-                );
+              if (_nameCtrl.text.trim().isNotEmpty) {
+                await authController.updateDisplayName(_nameCtrl.text.trim());
               }
+              if (!context.mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('已保存')),
+              );
             },
             child: const Text('保存名称与共享组'),
           ),
@@ -110,11 +131,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             subtitle: const Text('已写入 lib/config/env.dart'),
           ),
           ListTile(
-            title: const Text('Spring Boot API'),
+            title: const Text('Firebase'),
             subtitle: Text(
-              Env.hasHttpBackend
-                  ? 'API_BASE_URL 已注入（需 access token 才能同步）'
-                  : '未配置 API_BASE_URL（运行需 dart-define）',
+              c.hasSyncBackend
+                  ? 'Firebase 原生配置已接入，认证与位置同步均可启用'
+                  : 'Firebase 当前不可用，请检查原生配置文件与初始化状态',
             ),
           ),
           const SizedBox(height: 16),

@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:location_share/main.dart';
+import 'package:location_share/providers/auth_controller.dart';
 import 'package:location_share/providers/sharing_controller.dart';
 import 'package:location_share/services/local_prefs.dart';
 import 'package:provider/provider.dart';
@@ -15,12 +16,22 @@ void main() {
       'sharing_enabled': false,
     });
     await tester.pumpWidget(
-      ChangeNotifierProvider(
-        create: (_) => SharingController(
-          prefs: LocalPrefs(),
-          syncRepository: null,
-        )..initialize(),
-        child: const LocationShareApp(),
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(
+            create: (_) => SharingController(
+              prefs: LocalPrefs(),
+              syncRepository: null,
+            )..initialize(),
+          ),
+          ChangeNotifierProvider(
+            create: (_) => AuthController(
+            )..initialize(),
+          ),
+        ],
+        child: const LocationShareApp(
+          firebaseConfigured: false,
+        ),
       ),
     );
     await tester.pump();
