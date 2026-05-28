@@ -127,11 +127,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             subtitle: const Text('已写入 lib/config/env.dart'),
           ),
           ListTile(
-            title: const Text('Firebase'),
+            title: const Text('后端服务'),
             subtitle: Text(
-              c.hasSyncBackend
-                  ? 'Firebase 原生配置已接入，认证与位置同步均可启用'
-                  : 'Firebase 当前不可用，请检查原生配置文件与初始化状态',
+              c.hasSyncBackend ? '后端已连接，认证与位置同步均可启用' : '后端未连接',
             ),
           ),
           const SizedBox(height: 16),

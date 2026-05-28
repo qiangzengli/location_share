@@ -150,7 +150,7 @@ class SharingController extends ChangeNotifier {
     if (on == sharingEnabled) return;
     if (on) {
       if (_sync == null) {
-        statusMessage = '请先完成 Firebase 配置并登录，才能启用位置共享。';
+        statusMessage = '请先登录，才能启用位置共享。';
         notifyListeners();
         return;
       }
@@ -274,7 +274,7 @@ class SharingController extends ChangeNotifier {
       if (kDebugMode) {
         debugPrint('upsert failed: $e\n$st');
       }
-      statusMessage = '位置同步失败，请检查 Firebase 配置、登录状态与网络。';
+      statusMessage = '位置同步失败，请检查登录状态与网络。';
       notifyListeners();
     }
   }

@@ -51,7 +51,7 @@ class _AuthScreenState extends State<AuthScreen> {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      _isRegisterMode ? '创建账号后即可登录使用。' : '使用 Firebase 账号登录。',
+                      _isRegisterMode ? '创建账号后即可登录使用。' : '登录后即可使用位置共享。',
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
