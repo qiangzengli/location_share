@@ -16,6 +16,7 @@ class HttpAuthService {
   static const _timeout = Duration(seconds: 15);
   static const _accessTokenKey = 'access_token';
   static const _refreshTokenKey = 'refresh_token';
+  static const _userKey = 'auth_user_json';
 
   final _authStateController = StreamController<AuthUser?>.broadcast();
   AuthUser? _currentUser;
@@ -25,9 +26,18 @@ class HttpAuthService {
 
   Future<void> initialize() async {
     final token = await prefs.getString(_accessTokenKey);
-    if (token != null) {
-      // Token exists, user might be logged in
-      // We'll verify on next API call
+    final userJson = await prefs.getString(_userKey);
+    if (token != null && userJson != null) {
+      try {
+        _currentUser = AuthUser.fromJson(
+          jsonDecode(userJson) as Map<String, dynamic>,
+        );
+        _authStateController.add(_currentUser);
+      } catch (_) {
+        await prefs.remove(_accessTokenKey);
+        await prefs.remove(_refreshTokenKey);
+        await prefs.remove(_userKey);
+      }
     }
   }
 
@@ -90,6 +100,7 @@ class HttpAuthService {
 
     await prefs.remove(_accessTokenKey);
     await prefs.remove(_refreshTokenKey);
+    await prefs.remove(_userKey);
     _currentUser = null;
     _authStateController.add(null);
   }
@@ -106,6 +117,7 @@ class HttpAuthService {
 
     await prefs.setString(_accessTokenKey, accessToken);
     await prefs.setString(_refreshTokenKey, refreshToken);
+    await prefs.setString(_userKey, jsonEncode(userJson));
 
     _currentUser = AuthUser.fromJson(userJson);
     _authStateController.add(_currentUser);
