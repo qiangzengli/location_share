@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:location_share/providers/group_controller.dart';
+import 'package:location_share/screens/qr_scanner_screen.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 class JoinGroupScreen extends StatefulWidget {
@@ -18,6 +20,21 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
   void dispose() {
     _codeCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _scanQr() async {
+    final status = await Permission.camera.request();
+    if (!mounted) return;
+    if (!status.isGranted) {
+      if (status.isPermanentlyDenied) await openAppSettings();
+      return;
+    }
+    final code = await Navigator.of(context).push<String>(
+      MaterialPageRoute(builder: (_) => const QrScannerScreen()),
+    );
+    if (code == null || code.isEmpty) return;
+    _codeCtrl.text = code;
+    await _submit();
   }
 
   Future<void> _submit() async {
@@ -81,6 +98,12 @@ class _JoinGroupScreenState extends State<JoinGroupScreen> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Text('加入'),
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: _busy ? null : _scanQr,
+              icon: const Icon(Icons.qr_code_scanner),
+              label: const Text('扫描二维码加入'),
             ),
           ],
         ),

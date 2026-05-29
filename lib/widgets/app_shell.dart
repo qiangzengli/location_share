@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+
 import 'package:flutter/material.dart';
 import 'package:location_share/providers/auth_controller.dart';
 import 'package:location_share/providers/group_controller.dart';
@@ -6,6 +8,7 @@ import 'package:location_share/screens/auth_screen.dart';
 import 'package:location_share/screens/groups_screen.dart';
 import 'package:location_share/screens/map_screen.dart';
 import 'package:location_share/screens/settings_screen.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 class AppShell extends StatefulWidget {
@@ -19,6 +22,15 @@ class _AppShellState extends State<AppShell> {
   String? _lastBoundUid;
   int _currentIndex = 0;
 
+  Future<void> _requestAndroidPermissions() async {
+    if (!Platform.isAndroid) return;
+    await [
+      Permission.notification,
+      Permission.locationWhenInUse,
+      Permission.camera,
+    ].request();
+  }
+
   static const _screens = <Widget>[
     MapScreen(),
     GroupsScreen(),
@@ -30,7 +42,16 @@ class _AppShellState extends State<AppShell> {
     final auth = context.watch<AuthController>();
     if (!auth.initialized) {
       return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('初始化中…'),
+            ],
+          ),
+        ),
       );
     }
 
@@ -51,6 +72,7 @@ class _AppShellState extends State<AppShell> {
           displayName: user.displayName,
         );
         context.read<GroupController>().initialize();
+        _requestAndroidPermissions();
       });
     }
 

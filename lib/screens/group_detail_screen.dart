@@ -4,6 +4,7 @@ import 'package:location_share/models/group.dart';
 import 'package:location_share/providers/auth_controller.dart';
 import 'package:location_share/providers/group_controller.dart';
 import 'package:provider/provider.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 class GroupDetailScreen extends StatefulWidget {
   const GroupDetailScreen({super.key, required this.groupId});
@@ -110,6 +111,11 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
                         const SnackBar(content: Text('邀请码已复制')),
                       );
                     },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.qr_code),
+                    tooltip: '显示二维码',
+                    onPressed: () => _showQrDialog(context, detail.inviteCode),
                   ),
                 ],
               ),
@@ -256,5 +262,36 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
           if (mounted) Navigator.of(context).pop();
         }
     }
+  }
+
+  void _showQrDialog(BuildContext context, String inviteCode) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('邀请二维码'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ColoredBox(
+              color: Colors.white,
+              child: QrImageView(data: inviteCode, size: 200),
+            ),
+            const SizedBox(height: 12),
+            Text(inviteCode,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 4,
+                    )),
+            const SizedBox(height: 4),
+            const Text('让对方扫描此二维码加入群组',
+                style: TextStyle(color: Colors.grey)),
+          ],
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx), child: const Text('关闭')),
+        ],
+      ),
+    );
   }
 }
