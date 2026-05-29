@@ -1,4 +1,4 @@
-package com.locationshare.location_share
+package com.alan.locationShare
 
 import android.content.Context
 import io.flutter.embedding.android.FlutterActivity
@@ -11,7 +11,7 @@ class MainActivity : FlutterActivity() {
         super.configureFlutterEngine(flutterEngine)
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
-            "com.locationshare.location_share/amap_privacy",
+            "com.alan.locationShare/amap_privacy",
         ).setMethodCallHandler { call, result ->
             if (call.method == "syncMapPrivacy") {
                 syncAmapMapPrivacy(applicationContext)
@@ -22,10 +22,6 @@ class MainActivity : FlutterActivity() {
         }
     }
 
-    /**
-     * 地图 SDK [com.amap.api.maps.MapsInitializer] 需在任意地图接口前调用；
-     * 通过反射避免 app 模块再声明一份 3dmap 依赖，类由地图插件打入运行时 classpath。
-     */
     private fun syncAmapMapPrivacy(context: Context) {
         try {
             val clazz = Class.forName("com.amap.api.maps.MapsInitializer")
@@ -43,7 +39,6 @@ class MainActivity : FlutterActivity() {
             )
             agree.invoke(null, context, true)
         } catch (_: Throwable) {
-            // 与插件内 ConvertUtil 一致：失败时不阻断 Flutter；可结合 logcat 排查
         }
     }
 }

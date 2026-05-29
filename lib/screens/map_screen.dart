@@ -1,5 +1,4 @@
 import 'dart:io' show Platform;
-import 'dart:ui';
 
 import 'package:x_amap_flutter_base/amap_flutter_base.dart';
 import 'package:x_amap_flutter_map/amap_flutter_map.dart';
@@ -37,6 +36,12 @@ class _MapScreenState extends State<MapScreen> {
 
   Future<void> _ensurePrivacy() async {
     final c = context.read<SharingController>();
+    if (!c.initialized) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _ensurePrivacy();
+      });
+      return;
+    }
     if (c.amapPrivacyAccepted) return;
     await _showPrivacyDialogAndPersist();
   }
@@ -118,22 +123,22 @@ class _MapScreenState extends State<MapScreen> {
             onTap: (_) => c.selectParticipant(null),
           ),
           SafeArea(
-            child: Padding(
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: Padding(
               padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-              child: ClipRRect(
+              child: Material(
+                color: Theme.of(context)
+                    .colorScheme
+                    .surfaceContainerHighest
+                    .withValues(alpha: 0.92),
                 borderRadius: BorderRadius.circular(14),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-                  child: Material(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .surfaceContainerHighest
-                        .withValues(alpha: 0.65),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 10,
-                      ),
+                elevation: 2,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
                       child: Row(
                         children: [
                           Icon(
@@ -213,12 +218,11 @@ class _MapScreenState extends State<MapScreen> {
                           ),
                         ],
                       ),
-                    ),
-                  ),
                 ),
               ),
             ),
           ),
+        ),
           Positioned(
             right: 16,
             bottom: MediaQuery.paddingOf(context).bottom + 200,

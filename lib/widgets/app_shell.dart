@@ -76,6 +76,14 @@ class _AppShellState extends State<AppShell> {
       });
     }
 
+    final groupController = context.watch<GroupController>();
+    final activeId = groupController.activeGroupId;
+    if (activeId != null && activeId != sharing.groupId) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        sharing.setGroupId(activeId);
+      });
+    }
+
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,

@@ -53,5 +53,24 @@
 	<string>若开启持续共享，应用可能在后台更新位置（后续版本可选）。当前版本主要在使用应用时更新位置。</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>用于与共享组同步你的位置。</string>
+	<key>NSCameraUsageDescription</key>
+	<string>用于扫描群组邀请二维码</string>
+	<key>NSInternetConnectionUsageDescription</key>
+	<string>用于与服务器同步位置信息和群组数据。</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>106.14.193.30</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+				<key>NSIncludesSubdomains</key>
+				<false/>
+			</dict>
+		</dict>
+	</dict>
 </dict>
 </plist>

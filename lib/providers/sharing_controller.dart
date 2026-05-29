@@ -30,6 +30,7 @@ class SharingController extends ChangeNotifier {
   String participantId = '';
   String displayName = '我';
   String groupId = LocalPrefs.defaultGroupId;
+  bool initialized = false;
   bool amapPrivacyAccepted = false;
   bool sharingEnabled = false;
   String? statusMessage;
@@ -50,7 +51,7 @@ class SharingController extends ChangeNotifier {
   static const _upsertMinMoveM = 8.0;
 
   static const _androidMapPrivacyChannel = MethodChannel(
-    'com.locationshare.location_share/amap_privacy',
+    'com.alan.locationShare/amap_privacy',
   );
 
   bool get hasSyncBackend => _sync != null;
@@ -73,6 +74,7 @@ class SharingController extends ChangeNotifier {
     if (sharingEnabled) {
       await _startPipeline();
     }
+    initialized = true;
     notifyListeners();
   }
 
@@ -156,7 +158,10 @@ class SharingController extends ChangeNotifier {
       }
       final loc = await Permission.locationWhenInUse.request();
       if (!loc.isGranted) {
-        statusMessage = '需要定位权限才能共享位置。';
+        if (loc.isPermanentlyDenied) {
+          await openAppSettings();
+        }
+        statusMessage = '需要定位权限才能共享位置，请在设置中开启。';
         notifyListeners();
         return;
       }
@@ -177,6 +182,7 @@ class SharingController extends ChangeNotifier {
   }
 
   Future<void> _startPipeline() async {
+    if (_location != null) return; // already running, skip redundant restart
     await _stopPipeline();
     if (!amapPrivacyAccepted) {
       statusMessage = '请先同意高德地图 SDK 隐私合规声明。';

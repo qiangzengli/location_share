@@ -1,0 +1,65 @@
+PODS:
+  - AMap3DMap (11.1.200):
+    - AMapFoundation (>= 1.8.7)
+  - AMapFoundation (1.8.7)
+  - AMapLocation (2.10.0):
+    - AMapFoundation (>= 1.8.0)
+  - Flutter (1.0.0)
+  - mobile_scanner (7.0.0):
+    - Flutter
+    - FlutterMacOS
+  - permission_handler_apple (9.4.8):
+    - Flutter
+  - shared_preferences_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
+  - x_amap_flutter_location (0.0.1):
+    - AMapLocation
+    - Flutter
+  - x_amap_flutter_map (0.0.1):
+    - AMap3DMap
+    - Flutter
+
+DEPENDENCIES:
+  - AMapLocation (= 2.10.0)
+  - Flutter (from `Flutter`)
+  - mobile_scanner (from `.symlinks/plugins/mobile_scanner/darwin`)
+  - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
+  - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
+  - x_amap_flutter_location (from `.symlinks/plugins/x_amap_flutter_location/ios`)
+  - x_amap_flutter_map (from `.symlinks/plugins/x_amap_flutter_map/ios`)
+
+SPEC REPOS:
+  trunk:
+    - AMap3DMap
+    - AMapFoundation
+    - AMapLocation
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  mobile_scanner:
+    :path: ".symlinks/plugins/mobile_scanner/darwin"
+  permission_handler_apple:
+    :path: ".symlinks/plugins/permission_handler_apple/ios"
+  shared_preferences_foundation:
+    :path: ".symlinks/plugins/shared_preferences_foundation/darwin"
+  x_amap_flutter_location:
+    :path: ".symlinks/plugins/x_amap_flutter_location/ios"
+  x_amap_flutter_map:
+    :path: ".symlinks/plugins/x_amap_flutter_map/ios"
+
+SPEC CHECKSUMS:
+  AMap3DMap: 89c17fdbca2f25e4b46d6a45a8e50346980fc799
+  AMapFoundation: e99da1cc722528c60b39340b4763a95305f6c55e
+  AMapLocation: 5248aec2455ebb5d104b367813c946430a2ee033
+  Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
+  mobile_scanner: 9157936403f5a0644ca3779a38ff8404c5434a93
+  permission_handler_apple: 92d754bbaa7361d436db2d6c3c1c2a0fdcec462e
+  shared_preferences_foundation: 7036424c3d8ec98dfe75ff1667cb0cd531ec82bb
+  x_amap_flutter_location: 138de58f55c7e2f0d3a42151a195b487b24fb408
+  x_amap_flutter_map: e1ff34a59f535b07232fa1bcfcadad2d68306430
+
+PODFILE CHECKSUM: 46e4360c45771e22462e39c9b9f8d5e123ac94c2
+
+COCOAPODS: 1.16.2

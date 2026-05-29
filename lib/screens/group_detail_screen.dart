@@ -267,30 +267,49 @@ class _GroupDetailScreenState extends State<GroupDetailScreen> {
   void _showQrDialog(BuildContext context, String inviteCode) {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('邀请二维码'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ColoredBox(
-              color: Colors.white,
-              child: QrImageView(data: inviteCode, size: 200),
-            ),
-            const SizedBox(height: 12),
-            Text(inviteCode,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('邀请二维码',
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black)),
+              const SizedBox(height: 16),
+              Container(
+                width: 220,
+                height: 220,
+                padding: const EdgeInsets.all(10),
+                color: Colors.white,
+                child: QrImageView(
+                  data: inviteCode,
+                  version: QrVersions.auto,
+                  size: 200,
+                  backgroundColor: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(inviteCode,
+                  style: const TextStyle(
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 4,
-                    )),
-            const SizedBox(height: 4),
-            const Text('让对方扫描此二维码加入群组',
-                style: TextStyle(color: Colors.grey)),
-          ],
+                      color: Colors.black)),
+              const SizedBox(height: 4),
+              const Text('让对方扫描此二维码加入群组',
+                  style: TextStyle(color: Colors.grey)),
+              const SizedBox(height: 12),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('关闭'),
+              ),
+            ],
+          ),
         ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx), child: const Text('关闭')),
-        ],
       ),
     );
   }

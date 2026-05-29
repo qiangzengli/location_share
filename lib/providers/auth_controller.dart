@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 import 'package:location_share/models/auth_user.dart';
 import 'package:location_share/services/http_auth_service.dart';
 
@@ -79,13 +81,22 @@ class AuthController extends ChangeNotifier {
       await action();
       return true;
     } on TimeoutException {
-      errorMessage = '请求超时，请检查网络或稍后重试。';
+      errorMessage = '请求超时（超过15秒），请检查网络后重试。';
       return false;
     } on HttpAuthException catch (error) {
       errorMessage = error.message;
       return false;
+    } on SocketException catch (error) {
+      errorMessage = '网络连接失败：${error.message}';
+      return false;
+    } on HandshakeException catch (error) {
+      errorMessage = 'SSL握手失败：${error.message}';
+      return false;
+    } on http.ClientException catch (error) {
+      errorMessage = '网络请求失败：${error.message}';
+      return false;
     } catch (error) {
-      errorMessage = '操作失败，请稍后重试。';
+      errorMessage = '操作失败：$error';
       if (kDebugMode) {
         debugPrint('auth action failed: $error');
       }

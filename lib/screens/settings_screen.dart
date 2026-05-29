@@ -11,20 +11,37 @@ class SettingsScreen extends StatefulWidget {
   State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class _SettingsScreenState extends State<SettingsScreen>
+    with WidgetsBindingObserver {
   late TextEditingController _nameCtrl;
+  PermissionStatus _locationStatus = PermissionStatus.denied;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     final c = context.read<SharingController>();
     _nameCtrl = TextEditingController(text: c.displayName);
+    _refreshPermission();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _nameCtrl.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _refreshPermission();
+    }
+  }
+
+  Future<void> _refreshPermission() async {
+    final status = await Permission.locationWhenInUse.status;
+    if (mounted) setState(() => _locationStatus = status);
   }
 
   @override
@@ -40,7 +57,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ListTile(
             contentPadding: EdgeInsets.zero,
             title: Text(auth.user?.displayName ?? c.displayName),
-            subtitle: Text(auth.user?.email ?? '未登录'),
+            subtitle: Text(auth.isLoggedIn
+              ? (auth.user?.email ?? auth.user?.username ?? '已登录')
+              : '未登录'),
             trailing: TextButton(
               onPressed: auth.isBusy
                   ? null
@@ -86,19 +105,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
             '权限',
             style: Theme.of(context).textTheme.titleMedium,
           ),
-          FutureBuilder<PermissionStatus>(
-            future: Permission.locationWhenInUse.status,
-            builder: (context, snap) {
-              final s = snap.data ?? PermissionStatus.denied;
-              return ListTile(
-                title: const Text('定位权限'),
-                subtitle: Text(_permSubtitle(s)),
-                trailing: TextButton(
-                  onPressed: () => openAppSettings(),
-                  child: const Text('去设置'),
-                ),
-              );
-            },
+          ListTile(
+            title: const Text('定位权限'),
+            subtitle: Text(_permSubtitle(_locationStatus)),
+            trailing: TextButton(
+              onPressed: () => openAppSettings(),
+              child: const Text('去设置'),
+            ),
           ),
         ],
       ),
