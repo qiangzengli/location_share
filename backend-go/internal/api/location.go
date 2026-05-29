@@ -15,7 +15,8 @@ type locationHandler struct {
 
 func (h *locationHandler) list(w http.ResponseWriter, r *http.Request) {
 	groupID := chi.URLParam(r, "groupId")
-	resp, err := h.svc.ListGroup(r.Context(), groupID)
+	callerID := userIDFromCtx(r.Context())
+	resp, err := h.svc.ListGroup(r.Context(), groupID, callerID)
 	if err != nil {
 		writeError(w, err)
 		return

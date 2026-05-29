@@ -30,6 +30,8 @@ func main() {
 		&model.AppUser{},
 		&model.RefreshToken{},
 		&model.ParticipantLocation{},
+		&model.Group{},
+		&model.GroupMember{},
 	); err != nil {
 		log.Error("migration failed", "error", err)
 		os.Exit(1)
@@ -39,8 +41,9 @@ func main() {
 	authSvc := service.NewAuthService(s, cfg)
 	userSvc := service.NewUserService(s)
 	locSvc := service.NewLocationService(s)
+	groupSvc := service.NewGroupService(s)
 
-	router := api.NewRouter(cfg, authSvc, userSvc, locSvc)
+	router := api.NewRouter(cfg, authSvc, userSvc, locSvc, groupSvc)
 
 	addr := ":" + cfg.Port
 	log.Info("server starting", "addr", addr)

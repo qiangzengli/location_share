@@ -15,6 +15,7 @@ func NewRouter(
 	authSvc *service.AuthService,
 	userSvc *service.UserService,
 	locSvc *service.LocationService,
+	groupSvc *service.GroupService,
 ) http.Handler {
 	r := chi.NewRouter()
 
@@ -25,6 +26,7 @@ func NewRouter(
 	ah := &authHandler{svc: authSvc}
 	uh := &userHandler{svc: userSvc}
 	lh := &locationHandler{svc: locSvc}
+	gh := &groupHandler{svc: groupSvc}
 
 	jwtAuth := AuthMiddleware(cfg)
 
@@ -53,11 +55,25 @@ func NewRouter(
 		r.Patch("/me", uh.updateMe)
 	})
 
-	// Location — all protected.
+	// Groups — all protected.
 	r.Route("/api/groups", func(r chi.Router) {
 		r.Use(jwtAuth)
-		r.Get("/{groupId}/locations", lh.list)
-		r.Put("/{groupId}/locations/me", lh.upsert)
+		r.Post("/", gh.create)
+		r.Get("/", gh.list)
+		r.Post("/join", gh.join)
+
+		r.Route("/{groupId}", func(r chi.Router) {
+			r.Get("/", gh.detail)
+			r.Patch("/", gh.update)
+			r.Delete("/", gh.delete)
+			r.Delete("/leave", gh.leave)
+			r.Post("/kick/{userId}", gh.kick)
+			r.Post("/regenerate-code", gh.regenerateCode)
+
+			// Location sub-routes
+			r.Get("/locations", lh.list)
+			r.Put("/locations/me", lh.upsert)
+		})
 	})
 
 	return r

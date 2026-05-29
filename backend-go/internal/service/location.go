@@ -16,10 +16,22 @@ type LocationService struct {
 
 func NewLocationService(s *store.Store) *LocationService { return &LocationService{store: s} }
 
-func (svc *LocationService) ListGroup(ctx context.Context, groupID string) ([]model.LocationResponse, error) {
+func (svc *LocationService) ListGroup(ctx context.Context, groupID string, callerID uuid.UUID) ([]model.LocationResponse, error) {
 	groupID = strings.TrimSpace(groupID)
 	if groupID == "" || len(groupID) > 128 {
 		return nil, apperr.BadRequest("groupId 无效")
+	}
+
+	gid, err := uuid.Parse(groupID)
+	if err != nil {
+		return nil, apperr.BadRequest("groupId 格式无效")
+	}
+	isMember, err := svc.store.IsMember(ctx, gid, callerID)
+	if err != nil {
+		return nil, apperr.Internal("查询失败")
+	}
+	if !isMember {
+		return nil, apperr.Forbidden("你不是该群组成员")
 	}
 
 	locs, err := svc.store.LocationsByGroup(ctx, groupID)
@@ -59,6 +71,19 @@ func (svc *LocationService) UpsertMyLocation(
 	}
 	if *req.Longitude < -180 || *req.Longitude > 180 {
 		return nil, apperr.BadRequest("longitude 须在 -180~180 之间")
+	}
+
+	// Membership check
+	gid, parseErr := uuid.Parse(groupID)
+	if parseErr != nil {
+		return nil, apperr.BadRequest("groupId 格式无效")
+	}
+	isMember, memberErr := svc.store.IsMember(ctx, gid, callerUserID)
+	if memberErr != nil {
+		return nil, apperr.Internal("查询失败")
+	}
+	if !isMember {
+		return nil, apperr.Forbidden("你不是该群组成员")
 	}
 
 	// Ownership check
