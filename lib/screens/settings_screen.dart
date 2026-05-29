@@ -46,9 +46,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ? null
                   : () async {
                       await context.read<AuthController>().signOut();
-                      if (context.mounted) {
-                        Navigator.of(context).pop();
-                      }
                     },
               child: const Text('退出登录'),
             ),
@@ -102,29 +99,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               );
             },
-          ),
-          const Divider(),
-          Text(
-            '配置状态',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          ListTile(
-            title: const Text('高德 Key'),
-            subtitle: const Text('已写入 lib/config/env.dart'),
-          ),
-          ListTile(
-            title: const Text('后端服务'),
-            subtitle: Text(
-              c.hasSyncBackend ? '后端已连接，认证与位置同步均可启用' : '后端未连接',
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            '首版说明：为降低商店审核与系统弹窗复杂度，当前以「使用中」定位为主；'
-            '后台持续共享需另行申请权限并可能使用前台服务。',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
           ),
         ],
       ),

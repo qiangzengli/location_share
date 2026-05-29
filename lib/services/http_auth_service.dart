@@ -106,7 +106,52 @@ class HttpAuthService {
   }
 
   Future<String?> getAccessToken() async {
-    return prefs.getString(_accessTokenKey);
+    final token = await prefs.getString(_accessTokenKey);
+    if (token == null) return null;
+
+    // Check if token is expired by decoding JWT payload
+    if (_isTokenExpired(token)) {
+      final refreshed = await _tryRefresh();
+      if (refreshed) {
+        return prefs.getString(_accessTokenKey);
+      }
+      return null;
+    }
+    return token;
+  }
+
+  bool _isTokenExpired(String token) {
+    try {
+      final parts = token.split('.');
+      if (parts.length != 3) return true;
+      final payload = parts[1];
+      // Add padding for base64
+      final normalized = base64Url.normalize(payload);
+      final decoded = utf8.decode(base64Url.decode(normalized));
+      final json = jsonDecode(decoded) as Map<String, dynamic>;
+      final exp = json['exp'] as int;
+      // Consider expired if less than 60s remaining
+      return DateTime.now().millisecondsSinceEpoch ~/ 1000 >= exp - 60;
+    } catch (_) {
+      return true;
+    }
+  }
+
+  Future<bool> _tryRefresh() async {
+    final refreshToken = await prefs.getString(_refreshTokenKey);
+    if (refreshToken == null) return false;
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/auth/refresh'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'refreshToken': refreshToken}),
+      ).timeout(_timeout);
+      if (response.statusCode == 200) {
+        await _handleAuthResponse(response.body);
+        return true;
+      }
+    } catch (_) {}
+    return false;
   }
 
   Future<void> _handleAuthResponse(String body) async {

@@ -163,13 +163,17 @@ class SharingController extends ChangeNotifier {
     }
     sharingEnabled = on;
     await _prefs.setSharingEnabled(on);
-    if (on) {
-      await _startPipeline();
-    } else {
-      await _stopPipeline();
-    }
     statusMessage = null;
-    notifyListeners();
+    notifyListeners(); // Update UI immediately before async pipeline work
+    try {
+      if (on) {
+        await _startPipeline();
+      } else {
+        await _stopPipeline();
+      }
+    } catch (e) {
+      if (kDebugMode) debugPrint('pipeline toggle error: $e');
+    }
   }
 
   Future<void> _startPipeline() async {
