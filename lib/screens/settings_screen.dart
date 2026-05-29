@@ -13,20 +13,17 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   late TextEditingController _nameCtrl;
-  late TextEditingController _groupCtrl;
 
   @override
   void initState() {
     super.initState();
     final c = context.read<SharingController>();
     _nameCtrl = TextEditingController(text: c.displayName);
-    _groupCtrl = TextEditingController(text: c.groupId);
   }
 
   @override
   void dispose() {
     _nameCtrl.dispose();
-    _groupCtrl.dispose();
     super.dispose();
   }
 
@@ -61,8 +58,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: const Text('共享我的位置'),
             subtitle: Text(
               c.hasSyncBackend
-                  ? '将本机位置实时同步到 Firebase Firestore'
-                  : 'Firebase 未就绪，仅本地定位预览',
+                  ? '将本机位置实时同步到服务器'
+                  : '服务器未连接，仅本地定位预览',
             ),
             value: c.sharingEnabled,
             onChanged: (v) => c.setSharingEnabled(v),
@@ -77,26 +74,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onSubmitted: (v) => c.setDisplayName(v),
           ),
           const SizedBox(height: 12),
-          TextField(
-            controller: _groupCtrl,
-            decoration: const InputDecoration(
-              labelText: '共享组 ID',
-              helperText: '所有成员需填写相同 ID 才能互相看到',
-              border: OutlineInputBorder(),
-            ),
-            onSubmitted: (v) => c.setGroupId(v),
-          ),
-          const SizedBox(height: 12),
           FilledButton(
             onPressed: () async {
               await c.setDisplayName(_nameCtrl.text);
-              await c.setGroupId(_groupCtrl.text);
               if (!context.mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('已保存')),
               );
             },
-            child: const Text('保存名称与共享组'),
+            child: const Text('保存'),
           ),
           const SizedBox(height: 24),
           Text(

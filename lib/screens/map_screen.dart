@@ -6,8 +6,8 @@ import 'package:x_amap_flutter_map/amap_flutter_map.dart';
 import 'package:flutter/material.dart';
 import 'package:location_share/config/env.dart';
 import 'package:location_share/models/participant_location.dart';
+import 'package:location_share/providers/group_controller.dart';
 import 'package:location_share/providers/sharing_controller.dart';
-import 'package:location_share/screens/settings_screen.dart';
 import 'package:location_share/utils/time_utils.dart';
 import 'package:location_share/widgets/amap_privacy_dialog.dart';
 import 'package:location_share/widgets/people_sheet.dart';
@@ -63,19 +63,6 @@ class _MapScreenState extends State<MapScreen> {
       return Scaffold(
         appBar: AppBar(
           title: const Text('位置共享'),
-          actions: [
-            IconButton(
-              tooltip: '设置',
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => const SettingsScreen(),
-                  ),
-                );
-              },
-              icon: const Icon(Icons.settings_outlined),
-            ),
-          ],
         ),
         body: Center(
           child: Padding(
@@ -189,16 +176,40 @@ class _MapScreenState extends State<MapScreen> {
                               ],
                             ),
                           ),
-                          IconButton(
-                            tooltip: '设置',
-                            onPressed: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute<void>(
-                                  builder: (_) => const SettingsScreen(),
-                                ),
+                          Consumer<GroupController>(
+                            builder: (_, gc, __) {
+                              if (gc.groups.isEmpty) {
+                                return const SizedBox.shrink();
+                              }
+                              return PopupMenuButton<String>(
+                                tooltip: '切换群组',
+                                icon: const Icon(Icons.swap_horiz),
+                                onSelected: (id) {
+                                  gc.setActiveGroup(id);
+                                  context
+                                      .read<SharingController>()
+                                      .setGroupId(id);
+                                },
+                                itemBuilder: (_) => gc.groups
+                                    .map((g) => PopupMenuItem(
+                                          value: g.id,
+                                          child: Row(
+                                            children: [
+                                              if (g.id == gc.activeGroupId)
+                                                Icon(Icons.check,
+                                                    size: 18,
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .primary),
+                                              if (g.id == gc.activeGroupId)
+                                                const SizedBox(width: 8),
+                                              Text(g.name),
+                                            ],
+                                          ),
+                                        ))
+                                    .toList(),
                               );
                             },
-                            icon: const Icon(Icons.settings_outlined),
                           ),
                         ],
                       ),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:location_share/providers/auth_controller.dart';
+import 'package:location_share/providers/group_controller.dart';
 import 'package:location_share/providers/sharing_controller.dart';
+import 'package:location_share/repositories/group_repository.dart';
 import 'package:location_share/repositories/http_location_sync_repository.dart';
 import 'package:location_share/services/http_auth_service.dart';
 import 'package:location_share/services/local_prefs.dart';
@@ -12,11 +14,15 @@ Future<void> main() async {
 
   final prefs = LocalPrefs();
   final authService = HttpAuthService(
-    baseUrl: 'http://localhost:8080',
+    baseUrl: 'http://106.14.193.30:8082',
     prefs: prefs,
   );
   final locationSync = HttpLocationSyncRepository(
-    baseUrl: 'http://localhost:8080',
+    baseUrl: 'http://106.14.193.30:8082',
+    getAccessToken: authService.getAccessToken,
+  );
+  final groupRepo = GroupRepository(
+    baseUrl: 'http://106.14.193.30:8082',
     getAccessToken: authService.getAccessToken,
   );
 
@@ -33,6 +39,12 @@ Future<void> main() async {
           create: (_) => AuthController(
             authService: authService,
           )..initialize(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => GroupController(
+            repository: groupRepo,
+            prefs: prefs,
+          ),
         ),
       ],
       child: const LocationShareApp(),

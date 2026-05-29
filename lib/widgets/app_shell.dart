@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:location_share/providers/auth_controller.dart';
+import 'package:location_share/providers/group_controller.dart';
 import 'package:location_share/providers/sharing_controller.dart';
 import 'package:location_share/screens/auth_screen.dart';
+import 'package:location_share/screens/groups_screen.dart';
 import 'package:location_share/screens/map_screen.dart';
+import 'package:location_share/screens/settings_screen.dart';
 import 'package:provider/provider.dart';
 
 class AppShell extends StatefulWidget {
@@ -14,6 +17,13 @@ class AppShell extends StatefulWidget {
 
 class _AppShellState extends State<AppShell> {
   String? _lastBoundUid;
+  int _currentIndex = 0;
+
+  static const _screens = <Widget>[
+    MapScreen(),
+    GroupsScreen(),
+    SettingsScreen(),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -40,9 +50,33 @@ class _AppShellState extends State<AppShell> {
           uid: user.uid,
           displayName: user.displayName,
         );
+        context.read<GroupController>().initialize();
       });
     }
 
-    return const MapScreen();
+    return Scaffold(
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _screens,
+      ),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _currentIndex,
+        onDestinationSelected: (i) => setState(() => _currentIndex = i),
+        destinations: const [
+          NavigationDestination(
+              icon: Icon(Icons.map_outlined),
+              selectedIcon: Icon(Icons.map),
+              label: '地图'),
+          NavigationDestination(
+              icon: Icon(Icons.group_outlined),
+              selectedIcon: Icon(Icons.group),
+              label: '群组'),
+          NavigationDestination(
+              icon: Icon(Icons.settings_outlined),
+              selectedIcon: Icon(Icons.settings),
+              label: '设置'),
+        ],
+      ),
+    );
   }
 }

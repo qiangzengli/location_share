@@ -6,6 +6,7 @@ class LocalPrefs {
   static const _kGroupId = 'group_id';
   static const _kAmapPrivacyOk = 'amap_privacy_ok';
   static const _kSharingEnabled = 'sharing_enabled';
+  static const _kActiveGroupId = 'active_group_id';
 
   static const defaultGroupId = 'groups/dev_family';
 
@@ -57,6 +58,20 @@ class LocalPrefs {
   Future<void> setSharingEnabled(bool v) async {
     final p = await SharedPreferences.getInstance();
     await p.setBool(_kSharingEnabled, v);
+  }
+
+  Future<String?> getActiveGroupId() async {
+    final p = await SharedPreferences.getInstance();
+    return p.getString(_kActiveGroupId);
+  }
+
+  Future<void> setActiveGroupId(String? id) async {
+    final p = await SharedPreferences.getInstance();
+    if (id == null) {
+      await p.remove(_kActiveGroupId);
+    } else {
+      await p.setString(_kActiveGroupId, id);
+    }
   }
 
   Future<String?> getString(String key) async {
